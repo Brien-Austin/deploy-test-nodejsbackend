@@ -53,8 +53,7 @@ router.post("/login", async (req, res) => {
         { expiresIn: "3d" }
       );
       res.status(200).json({
-        existingUser,
-        acessToken,
+      message:"Logged In"
       });
     }
   }
