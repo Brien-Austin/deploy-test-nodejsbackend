@@ -2,6 +2,7 @@ const { User } = require("../models/User");
 const bcrypt = require("bcrypt");
 const router = require("express").Router();
 const UserSchema = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 router.post("/register", async (req, res) => {
   const { password, username } = req.body;
@@ -12,6 +13,7 @@ router.post("/register", async (req, res) => {
       username: username,
       email: req.body.email,
       password: hashedPassword,
+      isAdmin: req.body.isAdmin,
     });
 
     try {
@@ -30,6 +32,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const existingUser = await UserSchema.findOne({ email: email });
+
   if (!existingUser) {
     res.status(404).json({
       message: "User not found",
@@ -44,8 +47,14 @@ router.post("/login", async (req, res) => {
         message: "Invalid password",
       });
     } else {
+      const acessToken = jwt.sign(
+        { userId: existingUser._id, username: existingUser.username },
+        process.env.JWT_SECRET,
+        { expiresIn: "3d" }
+      );
       res.status(200).json({
-        message: "Logged in Successfully",
+        existingUser,
+        acessToken,
       });
     }
   }
